@@ -1,3 +1,3 @@
-package handler
+package handlers
 
 const spanName = "handler"

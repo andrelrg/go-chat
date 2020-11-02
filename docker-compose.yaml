@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  gochat:
+    image: getclass/gochat:latest
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
+    networks:
+      main:
+        aliases:
+          - gochat
+networks:
+  main:
+    external: true

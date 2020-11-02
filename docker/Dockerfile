@@ -1,6 +1,8 @@
+
 FROM alpine:latest
 
 RUN apk update && apk add --no-cache libc6-compat
-COPY ./go-chat /go/src/
+COPY ./user /go/src/
+COPY ./config.yaml /
 
-CMD ["/go/src/go-chat"]
+CMD ["/go/src/user"]

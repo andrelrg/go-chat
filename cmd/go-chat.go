@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/andrelrg/go-chat/internal"
-	"github.com/andrelrg/go-chat/internal/config"
+	"github.com/getclasslabs/go-chat/internal"
+	"github.com/getclasslabs/go-chat/internal/config"
+	"github.com/getclasslabs/go-chat/internal/repositories"
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	jaegerConf "github.com/uber/jaeger-client-go/config"
@@ -41,7 +42,6 @@ func main() {
 	opentracing.SetGlobalTracer(tracer)
 	defer closer.Close()
 
-	var config config.Config
 
 	f, err := os.Open("config.yaml")
 	if err != nil {
@@ -50,12 +50,15 @@ func main() {
 	defer f.Close()
 
 	decoder := yaml.NewDecoder(f)
-	err = decoder.Decode(&config)
+	err = decoder.Decode(&config.Config)
 	if err != nil {
 		panic(err)
 	}
 
+	repositories.Start()
+	config.Socket()
+
 	s := internal.NewServer()
 	log.Println("waiting routes...")
-	log.Fatal(http.ListenAndServe(config.Server.Port, s.Router))
+	log.Fatal(http.ListenAndServe(config.Config.Server.Port, s.Router))
 }
