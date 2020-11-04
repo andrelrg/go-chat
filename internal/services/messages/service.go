@@ -1,12 +1,18 @@
 package messages
 
 import (
+	"errors"
 	"github.com/getclasslabs/go-chat/internal/domains"
 	"github.com/getclasslabs/go-chat/internal/repositories/messages"
 	"github.com/getclasslabs/go-chat/internal/repositories/users"
 	"github.com/getclasslabs/go-tools/pkg/tracer"
+	"time"
 )
 
+var (
+	Times = 5
+	PauseInSecs = 1
+)
 
 func GetMessagesFrom(i *tracer.Infos, room int64) ([]domains.Message, error){
 	i.TraceIt("getting messages")
@@ -31,5 +37,41 @@ func Save(i *tracer.Infos, m *domains.Message) error{
 	}
 	m.ByID = id
 	rep := messages.NewMessage()
-	return rep.Create(i, m)
+	id, err = rep.Create(i, m)
+	if err != nil {
+		return err
+	}
+
+	m.ID = id
+	return nil
+}
+
+func CircuitSave(i *tracer.Infos, domain *domains.Message) error {
+	i.TraceIt("circuit breaker")
+	defer i.Span.Finish()
+	var err error
+	success := false
+
+	for tries := 0; tries <= Times; tries++ {
+		err = Save(i, domain)
+		if err != nil {
+			i.LogError(err)
+			time.Sleep(time.Duration(PauseInSecs) * time.Second)
+			continue
+		}
+		success = true
+		break
+	}
+	if !success{
+		return err
+	}
+
+	return nil
+}
+
+func Delete(i *tracer.Infos, domain *domains.Message) error {
+	i.TraceIt("deleting message")
+	defer i.Span.Finish()
+
+	return errors.New("not implemented yet")
 }

@@ -1,13 +1,12 @@
 package handlers
 
 import (
-	"github.com/getclasslabs/go-chat/internal/config"
-	"github.com/getclasslabs/go-chat/internal/services/messages"
 	"github.com/getclasslabs/go-chat/internal/services/rooms"
 	"github.com/getclasslabs/go-chat/internal/services/socketservice"
 	"github.com/getclasslabs/go-tools/pkg/request"
 	"github.com/getclasslabs/go-tools/pkg/tracer"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 	"net/http"
 )
 
@@ -16,44 +15,41 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 	i.TraceIt(spanName)
 	defer i.Span.Finish()
 
-	roomIdentifier := mux.Vars(r)["room"]
-	room := rooms.IsValid(i, roomIdentifier)
-	if room == 0 {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-
-	socket, err := config.Upgrader.Upgrade(w, r, nil)
+	socket, err := socketservice.NewSocket(w, r)
 	if err != nil {
 		i.LogError(err)
 		return
 	}
 
-	config.Connected[room] = append(config.Connected[room], socket)
+	roomIdentifier := mux.Vars(r)["room"]
 
-	msgs, err := messages.GetMessagesFrom(i, room)
-	if err != nil{
-		i.LogError(err)
-	}
-	for _, m := range msgs{
-		err = socketservice.WriteText(i, socket, &m)
-		if err != nil{
-			continue
-		}
+	room, err := rooms.Enter(i, socket, roomIdentifier)
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		return
 	}
 
 	for {
-		msgType, message, err := socketservice.Read(i, socket)
-		if err != nil{
+		msgType, message, err := socket.Read(i)
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err) {
+				socket.Remove(room)
+				return
+			}
 			continue
 		}
 
-		message.RoomID = room
-		go messages.Save(i, message)
+		if msgType == websocket.CloseMessage {
+			socket.Remove(room)
+			return
+		}
 
-		for _, s := range config.Connected[room] {
-			err = socketservice.Write(i, s, message, msgType)
-			if err != nil{
+		message.RoomID = room
+		message.Action(i)
+
+		for _, s := range socketservice.Connected[room] {
+			err = s.Write(i, message, msgType)
+			if err != nil {
 				continue
 			}
 		}

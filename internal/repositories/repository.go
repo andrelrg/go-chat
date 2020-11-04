@@ -1,6 +1,5 @@
 package repositories
 
-
 import (
 	"github.com/getclasslabs/go-chat/internal/config"
 	"github.com/getclasslabs/go-tools/pkg/db"
@@ -13,4 +12,3 @@ func Start() {
 }
 
 var Db db.Database
-

@@ -25,7 +25,7 @@ func (r *User) Create(i *tracer.Infos, identifier string) (int64, error) {
 	q := "INSERT INTO users(identifier) VALUES(?)"
 
 	_, err := r.db.Insert(i, q, identifier)
-	if err != nil{
+	if err != nil {
 		i.LogError(err)
 		return 0, err
 	}
@@ -40,7 +40,7 @@ func (r *User) Exists(i *tracer.Infos, identifier string) int64 {
 	q := "SELECT id FROM users WHERE identifier = ?"
 
 	ret, err := r.db.Get(i, q, identifier)
-	if err != nil{
+	if err != nil {
 		i.LogError(err)
 		return 0
 	}

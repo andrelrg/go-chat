@@ -25,7 +25,7 @@ func (r *Room) Create(i *tracer.Infos, identifier string) error {
 	q := "INSERT INTO rooms(identifier) VALUES(?)"
 
 	_, err := r.db.Insert(i, q, identifier)
-	if err != nil{
+	if err != nil {
 		i.LogError(err)
 		return err
 	}
@@ -39,7 +39,7 @@ func (r *Room) Exists(i *tracer.Infos, identifier string) int64 {
 	q := "SELECT id FROM rooms WHERE identifier = ?"
 
 	ret, err := r.db.Get(i, q, identifier)
-	if err != nil{
+	if err != nil {
 		i.LogError(err)
 		return 0
 	}

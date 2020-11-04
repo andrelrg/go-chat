@@ -4,6 +4,7 @@ import (
 	"github.com/getclasslabs/go-chat/internal"
 	"github.com/getclasslabs/go-chat/internal/config"
 	"github.com/getclasslabs/go-chat/internal/repositories"
+	"github.com/getclasslabs/go-chat/internal/services/socketservice"
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	jaegerConf "github.com/uber/jaeger-client-go/config"
@@ -19,11 +20,11 @@ func main() {
 
 	cfg := jaegerConf.Configuration{
 		ServiceName: "go-chat",
-		Sampler:     &jaegerConf.SamplerConfig{
+		Sampler: &jaegerConf.SamplerConfig{
 			Type:  jaeger.SamplerTypeConst,
 			Param: 1,
 		},
-		Reporter:    &jaegerConf.ReporterConfig{
+		Reporter: &jaegerConf.ReporterConfig{
 			LogSpans: false,
 		},
 	}
@@ -42,7 +43,6 @@ func main() {
 	opentracing.SetGlobalTracer(tracer)
 	defer closer.Close()
 
-
 	f, err := os.Open("config.yaml")
 	if err != nil {
 		log.Fatal(err)
@@ -56,7 +56,7 @@ func main() {
 	}
 
 	repositories.Start()
-	config.Socket()
+	socketservice.Socket()
 
 	s := internal.NewServer()
 	log.Println("waiting routes...")

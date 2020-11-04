@@ -23,6 +23,5 @@ func NewServer() *Server {
 func (s *Server) serve() {
 
 	s.Router.Path("/heartbeat").HandlerFunc(request.PreRequest(handlers.Heartbeat)).Methods(http.MethodGet)
-	s.Router.Path("/create").HandlerFunc(request.PreRequest(handlers.CreateRoom)).Methods(http.MethodPost)
 	s.Router.Path("/connect/{room}").HandlerFunc(request.PreRequest(handlers.Connect))
 }
