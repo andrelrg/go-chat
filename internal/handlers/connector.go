@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/getclasslabs/go-chat/internal/services/messages"
 	"github.com/getclasslabs/go-chat/internal/services/rooms"
 	"github.com/getclasslabs/go-chat/internal/services/socketservice"
 	"github.com/getclasslabs/go-tools/pkg/request"
@@ -45,7 +46,7 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 		}
 
 		message.RoomID = room
-		message.Action(i)
+		messages.Action(i, message)
 
 		for _, s := range socketservice.Connected[room] {
 			err = s.Write(i, message, msgType)

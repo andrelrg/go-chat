@@ -75,3 +75,30 @@ func Delete(i *tracer.Infos, domain *domains.Message) error {
 
 	return errors.New("not implemented yet")
 }
+
+func Action(i *tracer.Infos, m *domains.Message) error {
+	var err error
+	switch m.Kind {
+	case domains.Normal:
+		err = CircuitSave(i, m)
+		if err != nil {
+			return err
+		}
+		break
+	case domains.Deleting:
+		err = Delete(i, m)
+		if err != nil {
+			return err
+		}
+		break
+	case domains.Blocking:
+		//err = rooms.Block(i, m.RoomID)
+		//if err != nil {
+		//	return err
+		//}
+		break
+	default:
+		return errors.New("kind doesn't exists")
+	}
+	return nil
+}
