@@ -20,6 +20,6 @@ if ! docker network inspect main &>/dev/null ; then
     docker network create -d overlay main
 fi
 
-docker stack deploy -c build/docker-compose.yaml gct
+docker stack deploy -c build/docker-compose.yaml gcl
 
 echo "It's all set, ready to go!"

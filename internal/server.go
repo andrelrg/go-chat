@@ -1,8 +1,8 @@
 package internal
 
 import (
-	"github.com/andrelrg/go-chat/internal/handler"
-	"github.com/andrelrg/go-chat/tools"
+	"github.com/getclasslabs/go-chat/internal/handlers"
+	"github.com/getclasslabs/go-tools/pkg/request"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -22,6 +22,6 @@ func NewServer() *Server {
 
 func (s *Server) serve() {
 
-	s.Router.Path("/heartbeat").HandlerFunc(tools.PreRequest(handler.Heartbeat)).Methods(http.MethodGet)
-
+	s.Router.Path("/heartbeat").HandlerFunc(request.PreRequest(handlers.Heartbeat)).Methods(http.MethodGet)
+	s.Router.Path("/connect/{room}").HandlerFunc(request.PreRequest(handlers.Connect))
 }
